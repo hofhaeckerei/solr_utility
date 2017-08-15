@@ -46,7 +46,7 @@ class PreventNonTranslatedPageIndexer extends PageIndexer
      * @param int $language
      * @return bool
      */
-    private function hasPageTranslation($pageId, $language)
+    private function hasPageTranslation(int $pageId, int $language)
     {
         $queryBuilder = $this->getConnectionPool()
             ->getQueryBuilderForTable('pages_language_overlay');

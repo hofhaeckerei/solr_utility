@@ -187,7 +187,7 @@ class BaseCategoryContentObject extends AbstractContentObject
     }
 
     /**
-     * @param array $values
+     * @param string[] $values
      * @return string
      */
     private function prepareResult(array $values)
