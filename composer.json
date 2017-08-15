@@ -1,0 +1,22 @@
+{
+    "name": "h4ck3r31/solr-utility",
+    "type": "typo3-cms-extension",
+    "license": "GPL-2.0+",
+    "description": "This TYPO3 extension provides several utilities for ext:solr",
+    "authors": [
+        {
+            "name": "Oliver Hader",
+            "role": "Developer",
+            "email": "oliver.hader@typo3.org",
+            "homepage": "https://hofhaeckerei.de/"
+        }
+    ],
+    "require": {
+        "typo3/cms-core": "^7.6 || ^8.6 || 9.x-dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "H4ck3r31\\SolrUtility\\": "Classes/"
+        }
+    }
+}
