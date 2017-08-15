@@ -14,7 +14,9 @@ namespace H4ck3r31\SolrUtility\ContentObject;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\CMS\Core\Database\DatabaseConnection;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\RelationHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
@@ -64,9 +66,18 @@ class BaseCategoryContentObject extends AbstractContentObject
      */
     private function getBaseCategories()
     {
-        return $this->fetchCategories([
-            'parent=' . (int)$this->configuration['baseId'],
-        ]);
+        $queryBuilder = $this->createCategoryQueryBuilder();
+        $queryBuilder->where(
+            $queryBuilder->expr()->eq(
+                'parent',
+                $queryBuilder->createNamedParameter(
+                    (int)$this->configuration['baseId'],
+                    Connection::PARAM_INT
+                )
+            )
+        );
+
+        return $this->fetchCategories($queryBuilder);
     }
 
     /**
@@ -92,13 +103,22 @@ class BaseCategoryContentObject extends AbstractContentObject
             $categoryIds[] = (int)$item['id'];
         }
 
-        return $this->fetchCategories([
-            'uid IN (' . implode(',', $categoryIds) . ')',
-        ]);
+        $queryBuilder = $this->createCategoryQueryBuilder();
+        $queryBuilder->where(
+            $queryBuilder->expr()->in(
+                'uid',
+                $queryBuilder->createNamedParameter(
+                    $categoryIds,
+                    Connection::PARAM_INT_ARRAY
+                )
+            )
+        );
+
+        return $this->fetchCategories($queryBuilder);
     }
 
     /**
-     * @param array $categories
+     * @param array $categories Category records
      */
     private function resolveParentCategories(array $categories)
     {
@@ -110,9 +130,18 @@ class BaseCategoryContentObject extends AbstractContentObject
             }
         }
 
-        $parentCategories = $this->fetchCategories([
-            'uid IN (' . implode(',', $parentCategoryIds) . ')',
-        ]);
+        $queryBuilder = $this->createCategoryQueryBuilder();
+        $queryBuilder->where(
+            $queryBuilder->expr()->in(
+                'uid',
+                $queryBuilder->createNamedParameter(
+                    $parentCategoryIds,
+                    Connection::PARAM_INT_ARRAY
+                )
+            )
+        );
+
+        $parentCategories = $this->fetchCategories($queryBuilder);
 
         if (empty($parentCategories)) {
             return;
@@ -176,32 +205,17 @@ class BaseCategoryContentObject extends AbstractContentObject
     }
 
     /**
-     * @param array $predicates
+     * @param QueryBuilder $queryBuilder
      * @return array
      */
-    private function fetchCategories(array $predicates)
+    private function fetchCategories(QueryBuilder $queryBuilder)
     {
-        $defaultPredicates = GeneralUtility::trimExplode(
-            ' AND ',
-            $this->getPageRepository()->enableFields('sys_category'),
-            true
-        );
-        $predicates = array_merge($defaultPredicates, $predicates);
+        $records = $queryBuilder->execute()->fetchAll();
 
-        $result = $this->getDatabaseConnection()->exec_SELECTgetRows(
-            'uid,pid,parent,title,sys_language_uid,l10n_parent',
-            'sys_category',
-            implode(' AND ', $predicates),
-            '',
-            '',
-            '',
-            'uid'
+        return array_combine(
+            array_column($records, 'uid'),
+            array_values($records)
         );
-
-        if (empty($result)) {
-            return [];
-        }
-        return $result;
     }
 
     /**
@@ -221,10 +235,26 @@ class BaseCategoryContentObject extends AbstractContentObject
     }
 
     /**
-     * @return DatabaseConnection
+     * @return QueryBuilder
      */
-    private function getDatabaseConnection()
+    private function createCategoryQueryBuilder()
     {
-        return $GLOBALS['TYPO3_DB'];
+        $queryBuilder = $this->getConnectionPool()
+            ->getQueryBuilderForTable('sys_category')
+            ->select('uid', 'pid', 'parent', 'title', 'sys_language_uid', 'l10n_parent')
+            ->from('sys_category');
+        return $queryBuilder;
+    }
+
+    /**
+     * @return ConnectionPool
+     */
+    private function getConnectionPool()
+    {
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(
+            ConnectionPool::class
+        );
+        return $connectionPool;
     }
 }

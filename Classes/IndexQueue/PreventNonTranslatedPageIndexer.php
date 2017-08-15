@@ -16,7 +16,9 @@ namespace H4ck3r31\SolrUtility\IndexQueue;
 
 use ApacheSolrForTypo3\Solr\IndexQueue\Item;
 use ApacheSolrForTypo3\Solr\IndexQueue\PageIndexer;
-use TYPO3\CMS\Core\Database\DatabaseConnection;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class PreventNonTranslatedPageIndexer extends PageIndexer
 {
@@ -46,27 +48,45 @@ class PreventNonTranslatedPageIndexer extends PageIndexer
      */
     private function hasPageTranslation($pageId, $language)
     {
-        $predicates = [
-            'deleted=0',
-            'hidden=0',
-            'sys_language_uid=' . $language,
-            'pid=' . $pageId,
-        ];
+        $queryBuilder = $this->getConnectionPool()
+            ->getQueryBuilderForTable('pages_language_overlay');
+        $statement = $queryBuilder
+            ->select('uid')
+            ->from('pages_language_overlay')
+            ->where(
+                $queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq(
+                        'sys_language_uid',
+                        $queryBuilder->createNamedParameter(
+                            $language,
+                            Connection::PARAM_INT
+                        )
+                    ),
+                    $queryBuilder->expr()->eq(
+                        'pid',
+                        $queryBuilder->createNamedParameter(
+                            $pageId,
+                            Connection::PARAM_INT
+                        )
+                    )
+                )
+            )
+            ->setMaxResults(1)
+            ->execute();
 
-        $translation = $this->getDatabaseConnection()->exec_SELECTgetSingleRow(
-            'uid',
-            'pages_language_overlay',
-            implode(' AND ', $predicates)
-        );
-
-        return !empty($translation);
+        $translation = $statement->fetch();
+        return !empty($translation['uid']);
     }
 
     /**
-     * @return DatabaseConnection
+     * @return ConnectionPool
      */
-    private function getDatabaseConnection()
+    private function getConnectionPool()
     {
-        return $GLOBALS['TYPO3_DB'];
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(
+            ConnectionPool::class
+        );
+        return $connectionPool;
     }
 }
