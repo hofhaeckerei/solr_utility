@@ -1,7 +1,7 @@
 <?php
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'GetEnv TypoScript modifier',
-    'description' => 'GetEnv TypoScriot modifier',
+    'title' => 'Solr Utilities',
+    'description' => 'This TYPO3 extension provides several utilities for ext:solr',
     'category' => 'misc',
     'constraints' => [
         'depends' => [
@@ -12,7 +12,7 @@ $EM_CONF[$_EXTKEY] = [
     ],
     'autoload' => [
         'psr-4' => [
-            'H4ck3r31\\GetEnvTypoScript\\' => 'Classes',
+            'H4ck3r31\\SolrUtility\\' => 'Classes',
         ],
     ],
     'state' => 'stable',
@@ -21,7 +21,7 @@ $EM_CONF[$_EXTKEY] = [
     'clearCacheOnLoad' => 1,
     'author' => 'Oliver Hader',
     'author_email' => 'oliver.hader@typo3.org',
-    'author_company' => 'HofHäckerei',
+    'author_company' => 'hofhäckerei',
     'version' => '1.0.0',
     'clearcacheonload' => true,
 ];
