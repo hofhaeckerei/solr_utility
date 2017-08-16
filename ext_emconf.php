@@ -22,6 +22,6 @@ $EM_CONF[$_EXTKEY] = [
     'author' => 'Oliver Hader',
     'author_email' => 'oliver.hader@typo3.org',
     'author_company' => 'hofhäckerei',
-    'version' => '1.0.1',
+    'version' => '1.0-dev',
     'clearcacheonload' => true,
 ];
