@@ -37,11 +37,17 @@ class BaseCategoryContentObject extends AbstractContentObject
     ];
 
     /**
+     * Base category records having `baseId`
+     * matching in `parent` database field
+     *
      * @var array
      */
     private $baseCategories = [];
 
     /**
+     * Resolved category records assigned to the current
+     * subject record (e.g. "categories of the current page")
+     *
      * @var array
      */
     private $resolvedCategories = [];
@@ -78,6 +84,47 @@ class BaseCategoryContentObject extends AbstractContentObject
         );
 
         return $this->fetchCategories($queryBuilder);
+    }
+
+    /**
+     * Filters resolved base categories by either `filterIds` or
+     * excluding `excludeIds` configuration (if defined).
+     *
+     * @return array Filtered base categories
+     */
+    private function filterBaseCategories()
+    {
+        $filterIds = [];
+        $excludeIds = [];
+
+        if (!empty($this->configuration['filterIds'])) {
+            $filterIds = GeneralUtility::intExplode(
+                ',',
+                $this->configuration['filterIds'],
+                true
+            );
+        }
+        if (!empty($this->configuration['excludeIds'])) {
+            $filterIds = GeneralUtility::intExplode(
+                ',',
+                $this->configuration['excludeIds'],
+                true
+            );
+        }
+
+        if (empty($filterIds) && empty($excludeIds)) {
+            return $this->baseCategories;
+        }
+
+        return array_filter(
+            $this->baseCategories,
+            function (array $category) use ($filterIds, $excludeIds) {
+                $categoryId = (int)$category['uid'];
+                // filterIds takes precedence over excludeIds
+                return in_array($categoryId, $filterIds, true)
+                    || !in_array($categoryId, $excludeIds, true);
+            }
+        );
     }
 
     /**
@@ -164,8 +211,10 @@ class BaseCategoryContentObject extends AbstractContentObject
      */
     private function resolveIntersectingCategoryTitles()
     {
+        $validBaseCategories = $this->filterBaseCategories();
+
         $intersectingCategories = array_intersect_key(
-            $this->baseCategories,
+            $validBaseCategories,
             $this->resolvedCategories
         );
 
