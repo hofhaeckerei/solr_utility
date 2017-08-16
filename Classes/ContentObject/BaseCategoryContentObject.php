@@ -92,6 +92,10 @@ class BaseCategoryContentObject extends AbstractContentObject
             $categoryIds[] = (int)$item['id'];
         }
 
+        if (empty($categoryIds)) {
+            return [];
+        }
+
         return $this->fetchCategories([
             'uid IN (' . implode(',', $categoryIds) . ')',
         ]);
@@ -108,6 +112,10 @@ class BaseCategoryContentObject extends AbstractContentObject
             if (!in_array($parentCategoryId, $parentCategoryIds)) {
                 $parentCategoryIds[] = $parentCategoryId;
             }
+        }
+
+        if (empty($parentCategoryIds)) {
+            return;
         }
 
         $parentCategories = $this->fetchCategories([
