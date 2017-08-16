@@ -15,13 +15,17 @@ Fetches the next level cateogry titles of a given base category.
 * `multiValue` *(bool, default: true)*: Whether to return a multivalued array
 * `singleValueGlue` *(string, default: ",")*: Which character to use to
   concatenate multiple category titles in case `multiValue` is disabled
+* `filterIds` *(int-list)*: Defines which category IDs to keep in the final
+  result of resolved base categories - takes precedence over `excludeIds`
+* `excludeIds` *(int-list)*: Defines which category IDs to exclude from the
+  final result of resolved base categories
 
 **Example**
 
 Given the following category tree, the `SOLR_BASECATEGORY` content object
 invoked for `baseId=1` would fetch the category titles of the next level
 below the submitted base category - in this example the result would be
-`["News", "Products", "Events"]` only.
+`["News", "Products", "Events", "Press"]` only.
 
 * 1: Base Categories
   * 11: News
@@ -29,6 +33,7 @@ below the submitted base category - in this example the result would be
     * 121: New Products
     * 122: Products on Sale
   * 13: Events
+  * 14: Press
 * 2: Product Categories
   * 21: Software
   * 23: Books
@@ -42,6 +47,10 @@ plugin.tx_solr.index.queue {
                 baseId = 1
                 localField = categories
                 multiValue = 1
+                # both filterIds and excludeIds
+                # result in "Press" being ignored
+                filterIds = 11,12,13
+                excludeIds = 14
             }
 ```
 *Example of fetching next level category titles of base category with `uid=1`*
