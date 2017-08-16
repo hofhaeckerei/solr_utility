@@ -103,6 +103,10 @@ class BaseCategoryContentObject extends AbstractContentObject
             $categoryIds[] = (int)$item['id'];
         }
 
+        if (empty($categoryIds)) {
+            return [];
+        }
+
         $queryBuilder = $this->createCategoryQueryBuilder();
         $queryBuilder->where(
             $queryBuilder->expr()->in(
@@ -128,6 +132,10 @@ class BaseCategoryContentObject extends AbstractContentObject
             if (!in_array($parentCategoryId, $parentCategoryIds)) {
                 $parentCategoryIds[] = $parentCategoryId;
             }
+        }
+
+        if (empty($parentCategoryIds)) {
+            return;
         }
 
         $queryBuilder = $this->createCategoryQueryBuilder();
