@@ -16,9 +16,10 @@ Fetches the next level cateogry titles of a given base category.
 * `singleValueGlue` *(string, default: ",")*: Which character to use to
   concatenate multiple category titles in case `multiValue` is disabled
 * `filterIds` *(int-list)*: Defines which category IDs to keep in the final
-  result of resolved base categories - takes precedence over `excludeIds`
+  result of resolved base categories
 * `excludeIds` *(int-list)*: Defines which category IDs to exclude from the
-  final result of resolved base categories
+  final result of resolved base categories - takes precedence over `filterIds`
+  concerning values that are present for both properties
 
 **Example**
 

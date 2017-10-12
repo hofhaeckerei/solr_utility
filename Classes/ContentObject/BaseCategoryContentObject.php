@@ -109,9 +109,14 @@ class BaseCategoryContentObject extends AbstractContentObject
             $this->baseCategories,
             function (array $category) use ($filterIds, $excludeIds) {
                 $categoryId = (int)$category['uid'];
-                // filterIds takes precedence over excludeIds
-                return in_array($categoryId, $filterIds, true)
-                    || !in_array($categoryId, $excludeIds, true);
+                // excludeIds takes precedence over filterIds
+                // -> excludeIds [1,2,3] and filterIds [3,4,5] will
+                //    only return [4,5] since [1,2,3] are excluded
+                return !in_array($categoryId, $excludeIds, true)
+                    && (
+                        in_array($categoryId, $filterIds, true)
+                        || empty($filterIds)
+                    );
             }
         );
     }
