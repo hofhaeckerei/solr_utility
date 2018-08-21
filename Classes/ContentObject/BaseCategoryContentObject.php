@@ -138,7 +138,7 @@ class BaseCategoryContentObject extends AbstractContentObject
     private function getAssignedCategories()
     {
         list ($tableName, $id) = explode(':', $this->cObj->currentRecord);
-        $configuration = $GLOBALS['TCA'][$tableName]['columns']['categories']['config'];
+        $configuration = $GLOBALS['TCA'][$tableName]['columns'][$this->configuration['localField']]['config'];
 
         $relationHandler = GeneralUtility::makeInstance(RelationHandler::class);
         $relationHandler->start(
